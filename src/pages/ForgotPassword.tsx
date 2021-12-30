@@ -1,8 +1,8 @@
 import React from 'react';
 
-export const DeskBooking = () => {
+export const ForgotPassword = () => {
 
     return (
-        <h1>desk booking</h1>
+        <h1>ForgotPassword</h1>
     );
 }

@@ -3,6 +3,6 @@ import React from 'react';
 export const PasswordReset = () => {
 
     return (
-        <h1>PasswordResest</h1>
+        <h1>PasswordReset</h1>
     );
 }

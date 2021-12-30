@@ -1,8 +1,9 @@
 import React from 'react';
 
-export const DeskBooking = () => {
+export const Overview = () => {
 
     return (
-        <h1>desk booking</h1>
+
+        <h1>Overview</h1>
     );
 }
