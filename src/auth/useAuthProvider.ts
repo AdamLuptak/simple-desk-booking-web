@@ -17,7 +17,7 @@ export interface IUser {
 const useAuthProvider = (): IUseAuthProvider => {
     const [user, setUser] = useState<null | IUser>(null)
 
-    const login = async (username: string, password: string) => {
+    const login = async (username: string | null, password: string | null) => {
         try {
             const res = await axios({
                 method: 'post',
