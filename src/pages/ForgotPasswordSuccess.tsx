@@ -12,6 +12,7 @@ import Link from '@mui/material/Link';
 
 const theme = createTheme();
 
+
 export const ForgotPasswordSuccess = () => {
     return (
         <ThemeProvider theme={theme}>
