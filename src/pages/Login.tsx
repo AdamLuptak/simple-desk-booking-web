@@ -13,27 +13,39 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Copyright } from '../components/Copyright';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 const theme = createTheme();
+
+type IFormInputs = {
+    email: string
+    password: string
+}
+
+const schema = yup.object().shape({
+    email: yup.string().email().required(),
+    password: yup.string().min(4).max(20).required(),
+});
+
 
 export const Login = () => {
     const auth = useAuth();
     const navigate = useNavigate();
-    const [error, setError] = React.useState(false);
 
-
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setError(false)
-        const data = new FormData(event.currentTarget);
+    const { handleSubmit, formState: { errors }, control } = useForm<IFormInputs>({
+        resolver: yupResolver(schema),
+    });
+    const onSubmit: SubmitHandler<IFormInputs> = async (data) => {
         try {
-            // await auth?.login(data.get('email') as string, data.get('password') as string)
-            await auth?.login("user1@sdb.com", "g8K<a^v<$4-;`nj\"")
+            await auth?.login(data.email, data.password)
+            // await auth?.login("user1@sdb.com", "g8K<a^v<$4-;`nj\"")
             navigate("/overview");
         } catch (e) {
-            setError(true)
         }
     };
+
 
     return (
         <ThemeProvider theme={theme}>
@@ -53,29 +65,47 @@ export const Login = () => {
                     <Typography component="h1" variant="h5">
                         Sign in
                     </Typography>
-                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-                        <TextField
-                            error={error}
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="email"
-                            label="Email Address"
+                    <form onSubmit={handleSubmit(onSubmit)}>
+
+                        <Controller
                             name="email"
-                            autoComplete="email"
-                            autoFocus
-                            helperText={error ? "This is an invalid email" : ""}
+                            control={control}
+                            defaultValue=""
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    label="Email"
+                                    variant="outlined"
+                                    error={!!errors.email}
+                                    helperText={errors.email ? errors.email?.message : ''}
+                                    fullWidth
+                                    margin="normal"
+                                    id="email"
+                                    name="email"
+                                    autoFocus
+                                />
+                            )}
                         />
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
+                        <Controller
                             name="password"
-                            label="Password"
-                            type="password"
-                            id="password"
-                            autoComplete="current-password"
+                            control={control}
+                            defaultValue=""
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    type="password"
+                                    label="Password"
+                                    variant="outlined"
+                                    error={!!errors.password}
+                                    helperText={errors.password ? errors.password?.message : ''}
+                                    fullWidth
+                                    margin="normal"
+                                    name="password"
+                                    id="password"
+                                />
+                            )}
                         />
+
                         <Button
                             type="submit"
                             fullWidth
@@ -84,15 +114,16 @@ export const Login = () => {
                         >
                             Sign In
                         </Button>
-                        <Grid container justifyContent="center"
-                              alignItems="center">
-                            <Grid item>
-                                <Link href="/forgot-password" variant="body2">
-                                    Forgot password?
-                                </Link>
-                            </Grid>
+                    </form>
+
+                    <Grid container justifyContent="center"
+                          alignItems="center">
+                        <Grid item>
+                            <Link href="/forgot-password" variant="body2">
+                                Forgot password?
+                            </Link>
                         </Grid>
-                    </Box>
+                    </Grid>
                 </Box>
                 <Copyright sx={{ mt: 8, mb: 4 }}/>
             </Container>

@@ -1,12 +1,9 @@
 import React from 'react';
-import useAuth from '../auth/useAuth';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
@@ -14,37 +11,46 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Copyright } from '../components/Copyright';
 import axios from 'axios';
+import * as yup from 'yup';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 const theme = createTheme();
 
+type IFormInputs = {
+    password: string
+    confirmationPassword: string
+}
+
+const schema = yup.object().shape({
+    password: yup.string().required('Password is required').matches(
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}/,
+        "Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and one special case Character"
+    ),
+    confirmationPassword: yup.string()
+        .oneOf([yup.ref('password'), null], 'Passwords must match')
+});
+
+
 export const ResetPassword = () => {
     const navigate = useNavigate();
-    const [error, setError] = React.useState(false);
     const { search } = useLocation();
     const query = React.useMemo(() => new URLSearchParams(search), [search]);
-
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setError(false)
-
-        const code = query.get('code')
-        const data = new FormData(event.currentTarget);
-        const password = data.get('password')
-        const confirmationPassword = data.get('confirmationPassword')
-        if (password !== confirmationPassword) {
-            setError(true)
-            throw Error("Password not matched")
-        }
-
+    const { handleSubmit, formState: { errors }, control } = useForm<IFormInputs>({
+        resolver: yupResolver(schema),
+    });
+    const onSubmit: SubmitHandler<IFormInputs> = async (data) => {
         try {
-            query.get("name")
+            const code = query.get('code') ?? (() => {
+                throw new Error("No code provided")
+            })();
             await axios({
                 method: 'post',
                 url: "/api/auth/reset-password",
                 data: {
                     "code": code,
-                    "password": password,
-                    "passwordConfirmation": confirmationPassword,
+                    "password": data.password,
+                    "passwordConfirmation": data.confirmationPassword,
                 },
                 headers: {
                     "ContentType": 'application/json'
@@ -52,8 +58,8 @@ export const ResetPassword = () => {
             })
             navigate("/login");
         } catch (e) {
-            setError(true)
-        }finally {
+            console.log(e)
+        } finally {
         }
     };
 
@@ -75,30 +81,44 @@ export const ResetPassword = () => {
                     <Typography component="h1" variant="h5">
                         Sign in
                     </Typography>
-                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
+                    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
+                        <Controller
                             name="password"
-                            label="Password"
-                            type="password"
-                            id="password"
-                            autoComplete="current-password"
-                            helperText={"Password must contain at least 8 characters, 1 uppercase, 1 lowercase, and 1 number"}
+                            control={control}
+                            defaultValue=""
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    type="password"
+                                    label="Password"
+                                    variant="outlined"
+                                    error={!!errors.password}
+                                    helperText={errors.password ? errors.password?.message : ''}
+                                    fullWidth
+                                    margin="normal"
+                                    name="password"
+                                    id="password"
+                                />
+                            )}
                         />
-                        <TextField
-                            error={error}
-                            margin="normal"
-                            required
-                            fullWidth
+                        <Controller
                             name="confirmationPassword"
-                            label="Confirmation Password"
-                            type="password"
-                            id="confirmationPassword"
-                            autoComplete="current-password"
-                            helperText={error ? "Passwords not matched" : ""}
-
+                            control={control}
+                            defaultValue=""
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    type="password"
+                                    label="Confirmation Password"
+                                    variant="outlined"
+                                    error={!!errors.confirmationPassword}
+                                    helperText={errors.confirmationPassword ? errors.confirmationPassword?.message : ''}
+                                    fullWidth
+                                    margin="normal"
+                                    name="confirmationPassword"
+                                    id="confirmationPassword"
+                                />
+                            )}
                         />
                         <Button
                             type="submit"
