@@ -13,6 +13,7 @@ import { Container } from '@mui/material';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ForgotPasswordSuccess } from './pages/ForgotPasswordSuccess';
 import { ResetPassword } from './pages/ResetPassword';
+import { DeskBookingDetail } from './pages/DeskBookingDetail';
 
 function App() {
     return (
@@ -24,7 +25,8 @@ function App() {
                         <Routes>
                             <Route path="/" element={UsePrivateRoute(<DeskBooking/>)}/>
                             <Route path="/overview" element={UsePrivateRoute(<Overview/>)}/>
-                            <Route path="/desk-booking" element={UsePrivateRoute(<DeskBooking/>)}/>
+                            <Route path="/desk-booking" element={UsePrivateRoute(<DeskBookingDetail/>)}/>
+                            <Route path="/desk-booking/:id" element={UsePrivateRoute(<DeskBookingDetail/>)}/>
                             <Route path="/account" element={UsePrivateRoute(<Account/>)}/>
                             <Route path="/login" element={<Login/>}/>
                             <Route path="/forgot-password" element={<ForgotPassword/>}/>

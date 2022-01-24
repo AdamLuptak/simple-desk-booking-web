@@ -12,15 +12,21 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import useAuth from '../auth/useAuth';
-import { Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import { Paper } from '@mui/material';
 
 const pages = ['Overview', 'Desk-booking'];
 const settings = ['Account', 'Logout'];
 
+
 const CustomAppBar = () => {
+
     const auth = useAuth();
     const navigate = useNavigate();
+    const [selected, setSelected] = useState<string | null>('Overview');
 
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
@@ -35,6 +41,7 @@ const CustomAppBar = () => {
     const handleNavMenu = (setting: string) => {
         setAnchorElNav(null);
         setAnchorElUser(null)
+        setSelected(setting)
         navigate(`/${setting.toLocaleLowerCase()}`);
     };
 
@@ -42,8 +49,13 @@ const CustomAppBar = () => {
         setAnchorElNav(null);
     };
 
+    const handleCloseUserMenu = () => {
+        setAnchorElUser(null);
+    };
+
     return (
         <>
+
             {auth?.user &&
             <AppBar position="static">
               <Container maxWidth="xl">
@@ -54,7 +66,9 @@ const CustomAppBar = () => {
                     component="div"
                     sx={{ mr: 2, display: { xs: 'none', md: 'flex', lg: 'flex' } }}
                   >
-                    LOGO
+                    <Paper variant="elevation">
+                      <img src="favicon.ico"  width="50" height="50" />
+                    </Paper>
                   </Typography>
 
                   <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -88,6 +102,7 @@ const CustomAppBar = () => {
                     >
                         {pages.map((page) => (
                             <MenuItem
+                                selected={page === selected}
                                 key={page} onClick={() => handleNavMenu(page)}>
                                 <Typography textAlign="center">{page}</Typography>
                             </MenuItem>
@@ -100,24 +115,29 @@ const CustomAppBar = () => {
                     component="div"
                     sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
                   >
-                    Logo
+                    <Paper variant="elevation">
+                      <img src="favicon.ico"  width="50" height="50" />
+                    </Paper>
                   </Typography>
-                  <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                  <Box sx={{
+                      flexGrow: 1, display: { xs: 'none', md: 'flex' }, "&& .Mui-selected": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)"
+                      }
+                  }}>
                       {pages.map((page, index) => (
-                          <Button
-                              key={page}
-                              onClick={() => handleNavMenu(page)}
-                              sx={{ my: 2, color: 'white', display: 'block' }}
-                          >
-                              {page}
-                          </Button>
+                          <MenuItem selected={page === selected} onClick={() => handleNavMenu(page)}>
+                              <Typography sx={{ my: 2, color: 'white', display: 'block', }}
+                                          textAlign="center">{page}</Typography>
+                          </MenuItem>
                       ))}
                   </Box>
 
                   <Box sx={{ flexGrow: 0 }}>
                     <Tooltip title="Open settings">
                       <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                        <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg"/>
+                        <Avatar alt="Remy Sharp">
+                          <ManageAccountsIcon/>
+                          </Avatar>
                       </IconButton>
                     </Tooltip>
                     <Menu
@@ -134,10 +154,11 @@ const CustomAppBar = () => {
                           horizontal: 'right',
                       }}
                       open={Boolean(anchorElUser)}
-                      onClose={handleCloseNavMenu}
+                      onClose={handleCloseUserMenu}
                     >
                         {settings.map((setting) => (
-                            <MenuItem key={setting} onClick={() => handleNavMenu(setting)}>
+                            <MenuItem selected={setting === selected} key={setting}
+                                      onClick={() => handleNavMenu(setting)}>
                                 <Typography textAlign="center">{setting}</Typography>
                             </MenuItem>
                         ))}

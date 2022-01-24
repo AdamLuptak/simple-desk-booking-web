@@ -40,9 +40,9 @@ export const Login = () => {
     const onSubmit: SubmitHandler<IFormInputs> = async (data) => {
         try {
             await auth?.login(data.email, data.password)
-            // await auth?.login("user1@sdb.com", "g8K<a^v<$4-;`nj\"")
             navigate("/overview");
         } catch (e) {
+            console.log(e)
         }
     };
 
@@ -70,7 +70,7 @@ export const Login = () => {
                         <Controller
                             name="email"
                             control={control}
-                            defaultValue=""
+                            defaultValue="user1@sdb.com"
                             render={({ field }) => (
                                 <TextField
                                     {...field}
@@ -89,7 +89,7 @@ export const Login = () => {
                         <Controller
                             name="password"
                             control={control}
-                            defaultValue=""
+                            defaultValue='g8K<a^v<$4-;`nj"'
                             render={({ field }) => (
                                 <TextField
                                     {...field}
