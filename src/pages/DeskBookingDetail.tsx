@@ -8,8 +8,8 @@ import {
     Card,
     CardContent,
     CardHeader, Chip,
-    Divider,
-    Grid,
+    Divider, FormControl, FormHelperText,
+    Grid, InputLabel, MenuItem, Select,
     Snackbar,
     Stack,
     TextField, Typography
@@ -31,6 +31,11 @@ interface IDeskBooking {
     owner: string | null
 }
 
+interface IDesk {
+    id: number | string
+    uuid: string
+}
+
 const schema = yup.object().shape({
     id: yup.number().typeError('you must specify a Desk number').nullable(),
     from: yup.date().typeError('you must specify a Date from').required(),
@@ -48,6 +53,7 @@ export const DeskBookingDetail = () => {
     const [successSnackBar, setSuccessSnackBar] = useState(false);
     const [errorSnackBar, setErrorSnackBar] = useState(false);
     const [errorSnackBarMessage, setErrorSnackBarMessage] = useState<string>("");
+    const [deskList, setDeskList] = useState<Array<IDesk>>([{ id: "Select different time window [From, To]", uuid: "sdf" }])
 
     const { handleSubmit, formState, control, reset, watch } = useForm<IDeskBooking>({
         resolver: yupResolver(schema),
@@ -60,8 +66,34 @@ export const DeskBookingDetail = () => {
         }
     });
 
-    React.useEffect(() => {
-        const subscription = watch((value, { name, type }) => console.log(value, name, type));
+    useEffect(() => {
+        const subscription = watch((value, { name, type }) => {
+            if (value.from && value.to) {
+                axios({
+                    method: 'get',
+                    url: `/api/desks/available`,
+                    params: {
+                        from: value.from,
+                        to: value.to
+                    },
+                    headers: {
+                        "ContentType": 'application/json',
+                        "Authorization": `Bearer ${auth?.user?.jwt}`
+                    },
+                }).then(data => {
+                    return data.data.data
+                }).then(data => {
+                    console.log(data)
+                    if (data.length == 0) {
+                        setDeskList([{ id: "Select different time window [From, To]", uuid: "sdf" }])
+                    } else {
+                        setDeskList(data)
+                    }
+                })
+            }
+
+
+        });
         return () => subscription.unsubscribe();
     }, [watch]);
 
@@ -160,21 +192,32 @@ export const DeskBookingDetail = () => {
                     <CardContent>
                         <Grid container spacing={3}>
                             <Grid item md={6} xs={12}>
-                                <Controller
-                                    name="desk"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            fullWidth
-                                            error={!!formState.errors.desk}
-                                            helperText={formState.errors.desk ? formState.errors.desk?.message : ''}
-                                            label="Desk number"
-                                            name="desk"
-                                            variant="outlined"
-                                        />
-                                    )}
-                                />
+                                <FormControl fullWidth error={!!formState.errors.desk}>
+                                    <InputLabel id="demo-simple-select-label">First select time window [From,
+                                        To]</InputLabel>
+                                    <Controller
+                                        name="desk"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Select
+                                                {...field}
+                                                fullWidth
+                                                labelId="demo-simple-select-label"
+                                                id="demo-simple-select"
+                                                label="Desk"
+                                                name="desk"
+                                            >
+                                                {deskList.map((desk) => (
+                                                    <MenuItem key={desk.id} value={desk.id}>
+                                                        {desk.id}
+                                                    </MenuItem>
+                                                ))}
+
+                                            </Select>
+                                        )}
+                                    />
+                                    <FormHelperText>{formState.errors.desk ? formState.errors.desk?.message : ''}</FormHelperText>
+                                </FormControl>
                             </Grid>
                             <Grid item md={6} xs={12}>
                                 <Controller
